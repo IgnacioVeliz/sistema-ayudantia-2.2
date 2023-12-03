@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script src="../index.js"></script>
+    <script src="../otro.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Reservas AeroUTEM</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #container {
+            text-align: center;
+        }
+        button {
+            margin: 10px;
+            padding: 10px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        form {
+            max-width: 400px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+        }
+
+        input[type="submit"] {
+            background-color: #4caf50;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="container">
+        <h1>Sistema de Reservas</h1>
+        
+        <button onclick="cosa()">Formulario de Registro</button>
+        <button onclick="Formulario()">Formulario</button>
+        <button onclick="mostrarModificacion()">Modificación de Datos</button>
+        <button onclick="mostrarEliminacion()">Consultar Reserva</button>
+        <button onclick="mostrarAgregar()">Agregar reserva</button>
+
+        <!-- Formulario de Registro -->
+        <div id="formularioRegistro" style="display: none;">
+            <h2>Formulario de Registro</h2>
+            <div style="align-content:center; align-items:center; justify-content:center; display:flex" >
+                <div style="width:80%; overflow:scroll">
+                    <table id="tabla-viajes">
+                        <thead>
+                            <th>vuelo</th>
+                            <th>fecha hora partida</th>
+                            <th>fecha hora llegada</th>
+                            <th>ciudad origen</th>
+                            <th>ciudad destino</th>
+                            <th>aeropuerto origen</th>
+                            <th>aeropuerto destino</th>
+                            <th>pais origen</th>
+                            <th>pais destino</th>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+            <!-- Aquí iría el formulario de registro -->
+        </div>
+
+        <!-- Visualización de Datos -->
+        <div id="Formulario" style="display: none;">
+            <h2>Visualización de Datos</h2>
+            <div>
+                <form id="formCancelarReserva">
+                    <label for="rut">RUT del Cliente:</label>
+                    <input type="text" id="rut"  placeholder="123456789" name="rut" required>
+                    <br>
+                    <button type="button" onclick="cancelarReserva()">Cancelar Reserva</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modificación de Datos -->
+        <div id="modificacionDatos" style="display: none;">
+            <h2>Modificación de Datos</h2>
+            <div>
+                <form id="formCliente">
+                    <label for="rut">RUT:</label>
+                    <input type="text" id="rut" placeholder="123456789" name="rut" required>
+                    <br>
+                    <button type="button" onclick="verificarCliente()">Verificar Cliente</button>
+                
+                    <!-- Campos para actualizar -->
+                    <div id="datosCliente" style="display: none;">
+                      <label for="nombre">Nombre:</label>
+                      <input type="text" id="nombre" name="nombre" required>
+                      <br>
+                      <label for="apellido">Apellido:</label>
+                      <input type="text" id="apellido" name="apellido" required>
+                      <br>
+                      <label for="telefono">Teléfono:</label>
+                      <input type="text" id="telefono" name="telefono" required>
+                      <br>
+                      <label for="correo">Correo Electrónico:</label>
+                      <input type="email" id="correo" name="correo" required>
+                      <br>
+                      <button type="button" onclick="actualizarCliente()">Actualizar Cliente</button>
+                    </div>
+                  </form>
+            </div>
+        </div>
+
+        <!-- Eliminación de Registros -->
+        <div id="eliminacionRegistros" style="display: none;">
+            <h2>Consultar Reserva</h2>
+            <div>
+                <label for="rutInput">Ingrese su Rut:</label>
+                <input id="rutInput" type="text" placeholder="Ej. 123456789">
+                <button onclick="consultarReserva()">Consultar Reserva</button>
+                <div id="resultado"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        async function consultarReserva() {
+            const rut = document.getElementById('rutInput').value;
+            const resultadoDiv = document.getElementById('resultado');
+    
+            try {
+                const response = await fetch(`http://localhost:3000/reserva/${rut}`);
+                const data = await response.json();
+    
+                if (response.ok) {
+                    resultadoDiv.innerHTML = `
+                        <table>
+                            <tr>
+                                <th>Número de Reserva</th>
+                                <th>Estado de Reserva</th>
+                                <th>Id Vuelo</th>
+                            </tr>
+                            <tr>
+                                <td>${data.id_reserva}</td>
+                                <td>${data.id_estado_reserva}</td>
+                                <td>${data.id_vuelo}</td>
+                            </tr>
+                        </table>
+                    `;
+                } else {
+                    resultadoDiv.innerHTML = `<p>Error: ${data.message}</p>`;
+                }
+            } catch (error) {
+                resultadoDiv.innerHTML = `<p>Error de red: ${error.message}</p>`;
+            }
+        }
+    </script>
+    
+    <script>
+        async function verificarCliente() {
+          const rut = document.getElementById('rut').value;
+    
+          try {
+            const response = await fetch(`http://localhost:3000/cliente/${rut}`);
+            const data = await response.json();
+    
+            if (response.ok) {
+              // Cliente encontrado, muestra los campos y permite actualizar
+              document.getElementById('nombre').value = data.nombre;
+              document.getElementById('apellido').value = data.apellido;
+              document.getElementById('telefono').value = data.telefono;
+              document.getElementById('correo').value = data.correo;
+    
+              document.getElementById('datosCliente').style.display = 'block';
+              alert('Cliente encontrado. Puedes actualizar los datos.');
+            } else {
+              // Cliente no encontrado, oculta los campos
+              document.getElementById('datosCliente').style.display = 'none';
+              alert('Cliente no encontrado. Ingresa un RUT válido.');
+            }
+          } catch (error) {
+            console.error('Error al verificar el cliente:', error);
+            alert('Error al verificar el cliente. Consulta la consola para más detalles.');
+          }
+        }//
+    
+        async function actualizarCliente() {
+          const rut = document.getElementById('rut').value;
+          const nombre = document.getElementById('nombre').value;
+          const apellido = document.getElementById('apellido').value;
+          const telefono = document.getElementById('telefono').value;
+          const correo = document.getElementById('correo').value;
+    
+          try {
+            const response = await fetch(`http://localhost:3000/cliente/${rut}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: FormData({ nombre, apellido, telefono, correo }),
+            });
+    
+            const result = await response.json();
+    
+            if (response.ok) {
+              alert(result.message);
+            } else {
+              alert(result.message);
+            }
+          } catch (error) {
+            console.error('Error al actualizar el cliente:', error);
+            alert('Error al actualizar el cliente. Consulta la consola para más detalles.');
+          }
+        }
+      </script>
+
+      <script>
+        async function cancelarReserva() {
+          const rut = document.getElementById('rut').value;
+    
+          try {
+            const response = await fetch(`http://localhost:3000/cliente/${rut}/reserva`, {
+              method: 'DELETE',
+            });
+    
+            const result = await response.json();
+    
+            if (response.ok) {
+              alert(result.message);
+            } else {
+              alert(result.message);
+            }
+          } catch (error) {
+            console.error('Error al cancelar la reserva:', error);
+            alert('Error al cancelar la reserva. Consulta la consola para más detalles.');
+          }
+        }
+      </script>
+
+<form id="formularioReserva">
+  <label for="id_estado_reserva">ID Estado Reserva:</label>
+  <input type="text" id="id_estado_reserva" name="id_estado_reserva" required>
+
+  <label for="rut_cliente">RUT Cliente:</label>
+  <input type="text" id="rut_cliente" name="rut_cliente" required>
+
+  <label for="id_vuelo">ID Vuelo:</label>
+  <input type="text" id="id_vuelo" name="id_vuelo" required>
+
+  <button type="button" onclick="agregarReserva()">Agregar Reserva</button>
+<form>
+<script>
+  function agregarReserva() {
+    var id_estado_reserva = document.getElementById('id_estado_reserva').value;
+    var rut_cliente = document.getElementById('rut_cliente').value;
+    var id_vuelo = document.getElementById('id_vuelo').value;
+
+    // Realizar la solicitud POST al servidor para agregar la reserva
+    fetch('/agregar_reserva', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `id_estado_reserva=${id_estado_reserva}&rut_cliente=${rut_cliente}&id_vuelo=${id_vuelo}`,
+    })
+    .then(response => response.text())
+    .then(message => {
+      alert(message); // Mostrar mensaje de éxito o error
+    })
+    .catch(error => {
+      console.error('Error al realizar la solicitud:', error);
+      alert('Error al agregar reserva');
+    });
+  }
+</script>
+
+
+
+<script>
+        console.log("CARGANDO PAGINA WEB HTTP");
+      </script>
+</body>
+</html>
+
